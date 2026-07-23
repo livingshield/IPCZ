@@ -9,6 +9,19 @@
 *.sln.docstates
 *.suo
 
+## Sensitive configuration & secret files
+appsettings.Production.json
+appsettings.Development.json
+appsettings.secrets.json
+appsettings.local.json
+secrets.json
+.env
+.env.*
+deploy_secrets.py
+*.pem
+*.pfx
+*.key
+
 ## Operating System Files
 .DS_Store
 Thumbs.db
