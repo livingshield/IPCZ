@@ -37,6 +37,11 @@
                             <li><a class="dropdown-item" href="#" onclick="setTheme('theme-rainbow', 'Duhová'); return false;">🌈 Duhová (Rainbow)</a></li>
                         </ul>
                     </div>
+
+                    <!-- User Guide / Help Button -->
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill ms-2 px-3" data-bs-toggle="modal" data-bs-target="#userGuideModal" title="Uživatelská nápověda" style="font-size: 0.85rem;">
+                        ❓ Nápověda
+                    </button>
                 </div>
             </div>
         </nav>
@@ -45,6 +50,71 @@
     <main class="container py-5">
         @RenderBody()
     </main>
+
+    <!-- Modal: Uživatelská Nápověda -->
+    <div class="modal fade" id="userGuideModal" tabindex="-1" aria-labelledby="userGuideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content text-light" style="background: #0d1527; border: 1px solid var(--accent-cyan);">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title fw-bold text-info" id="userGuideModalLabel">📖 Průvodce a Uživatelská Nápověda IPCZ</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="line-height: 1.6; font-size: 0.95rem;">
+                    
+                    <div class="p-3 mb-4 rounded" style="background: rgba(0, 210, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.25);">
+                        <h6 class="fw-bold text-info mb-1">Portál aivezdravotnictvi.cz — Vstupní Triáž AI Gramotnosti</h6>
+                        <p class="mb-0 text-light small">
+                            Aplikace vyvinutá pro <strong>Institut postgraduálního vzdělávání ve zdravotnictví (IPVZ)</strong> a <strong>Ministerstvo zdravotnictví ČR</strong>. Slouží k měření AI gramotnosti a sestavení personalizovaného studijního plánu.
+                        </p>
+                    </div>
+
+                    <h6 class="fw-bold text-warning mb-2">📊 Metodika Aibility „Superpowered Professional™“</h6>
+                    <p class="text-muted small mb-3">
+                        Test měří 6 klíčových návyků práce s AI: <em>1. Včasné zapojení AI, 2. Experimentování, 3. Iterace, 4. Ověřování výstupů, 5. Uložené postupy, 6. Sdílení workflow</em>.
+                    </p>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-md-4">
+                            <div class="p-2 rounded bg-dark border border-secondary text-center">
+                                <span class="badge bg-info mb-1">Level 1 (0–39 %)</span>
+                                <div class="small text-muted">Základní úroveň — volné e-learningy bez registrace.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 rounded bg-dark border border-secondary text-center">
+                                <span class="badge bg-primary mb-1">Level 2 (40–74 %)</span>
+                                <div class="small text-muted">Pokročilá úroveň — webináře a workshopy IPVZ.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-2 rounded bg-dark border border-secondary text-center">
+                                <span class="badge bg-success mb-1">Level 3 (75–100 %)</span>
+                                <div class="small text-muted">Specialista — pokročilá školení a pilotáže.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-warning mb-2">💡 Jak používat aplikaci krok za krokem:</h6>
+                    <ol class="ps-3 mb-4 text-light">
+                        <li class="mb-2"><strong>Výběr role:</strong> Zvolte svou roli ve zdravotnickém ekosystému. Členové managementu mají možnost získat nabídku na speciální <em>Masterclass pro Management</em>.</li>
+                        <li class="mb-2"><strong>Benchmark test:</strong> Odpovězte na 12 otázek na škále 1 (Nesouhlasím) až 5 (Souhlasím).</li>
+                        <li class="mb-2"><strong>Vyhodnocení & AI Analýza:</strong> Získejte okamžité SP Skóre a dynamický AI rozbor 2 nejslabších oblastí z rozhraní <strong>Google Gemini API</strong>.</li>
+                        <li class="mb-2"><strong>🎨 Změna barevného téma:</strong> V pravém horním rohu můžete kliknutím na tlačítko <em>🎨 Téma</em> přepínat mezi 7 barevnými styly (🌙 Tmavá, ☀️ Světlá, ❤️ Červená, 💙 Modrá, 💚 Zelená, 💛 Žlutá, 🌈 Duhová).</li>
+                        <li class="mb-2"><strong>📄 Grafický Export do PDF:</strong> Na stránce výsledků klikněte na <em>Grafické PDF</em>. Můžete si vybrat barvu pozadí, prohlédnout si živý A4 náhled a stáhnout PDF s plnou diakritikou.</li>
+                        <li class="mb-2"><strong>✉️ Zaslání e-mailem:</strong> Zadáním e-mailu si můžete kompletní výsledky i s přiloženým PDF dokumentem nechat poslat do schránky.</li>
+                        <li><strong>📊 Anonymní statistik:</strong> V menu <em>Statistiky a Srovnání</em> si můžete prohlédnout celková anonymní data z MS SQL databáze.</li>
+                    </ol>
+
+                    <div class="pt-3 border-top border-secondary text-center text-muted small">
+                        Oficiální dokumentace v repozitáři: <strong class="text-info">USER_GUIDE.md</strong> • aivezdravotnictvi.cz
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary">
+                    <button type="button" class="btn btn-outline-info rounded-pill px-4" data-bs-dismiss="modal">Rozumím, zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="container">
