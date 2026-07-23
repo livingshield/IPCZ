@@ -1,0 +1,7 @@
+# .cursorrules for IPCZ
+
+- Framework: ASP.NET Core MVC (.NET 8.0)
+- Database Access: ADO.NET (SqlConnection/SqlCommand) with Stored Procedures prefixed with Ipcz_
+- AI Integration: Google Gemini 1.5 Flash via REST Client with fallbacks
+- UI: Vanilla CSS Medical-Tech Design System, Glassmorphism, Outfit/Inter typography, 7 Theme Switcher
+- Secrets: Never commit secrets to git. Always use placeholders in appsettings.json.
