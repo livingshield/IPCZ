@@ -1,0 +1,88 @@
+@model IpczApp.Models.RoleSelectionViewModel
+
+@{
+    ViewData["Title"] = "Výběr role";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card text-center mb-4">
+            <h1 class="display-6 fw-bold mb-3" style="background: linear-gradient(135deg, #faf6ed 0%, #00d2ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Vstupní Triáž AI Gramotnosti
+            </h1>
+            <p class="lead text-muted mb-4">
+                Zjistěte svou úroveň práce s umělou inteligencí podle metodiky Aibility. Získejte personalizovaný studijní plán doporučených kurzů a workshopů IPVZ.
+            </p>
+
+            <form asp-action="Index" method="post" class="text-start mt-4">
+                <div class="mb-4">
+                    <label asp-for="SelectedRole" class="form-label fw-bold mb-2">Vyberte svou roli ve zdravotnickém ekosystému:</label>
+                    <select asp-for="SelectedRole" class="form-select-custom" id="roleSelect">
+                        <option value="">-- Zvolte roli --</option>
+                        @foreach (var role in IpczApp.Models.RoleSelectionViewModel.AvailableRoles)
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                    <span asp-validation-for="SelectedRole" class="text-danger mt-1 d-block"></span>
+                </div>
+
+                <!-- Dynamicky zobrazovaný checkbox pro management -->
+                <div id="managementBox" class="mb-4 p-3 rounded" style="display: none; background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.2);">
+                    <label class="form-check-custom">
+                        <input asp-for="IsManagement" type="checkbox" id="mgmtCheck" />
+                        <span><strong>Patřím do managementu nemocnice / zdravotnického zařízení</strong> (umožní nabídnout manažerskou Masterclass)</span>
+                    </label>
+                </div>
+
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn-primary-custom">
+                        Spustit benchmark test (12 otázek) &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="row g-3 text-center mt-2">
+            <div class="col-md-4">
+                <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color);">
+                    <div class="fw-bold text-info mb-1">⚡ Rychlé vyhodnocení</div>
+                    <small class="text-muted">12 otázek v kontextu zdravotnictví, zabere cca 3 minuty</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color);">
+                    <div class="fw-bold text-success mb-1">🎯 Studijní plán na míru</div>
+                    <small class="text-muted">Doporučení kurzů IPVZ + rozbor nejslabších oblastí</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color);">
+                    <div class="fw-bold text-warning mb-1">📊 Anonymní srovnání</div>
+                    <small class="text-muted">Porovnejte své skóre s ostatními kolegy a rolemi</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleSelect = document.getElementById('roleSelect');
+            const mgmtBox = document.getElementById('managementBox');
+
+            function toggleMgmt() {
+                if (roleSelect.value === 'Nezdravotnický personál nemocnice') {
+                    mgmtBox.style.display = 'block';
+                } else {
+                    mgmtBox.style.display = 'none';
+                    document.getElementById('mgmtCheck').checked = false;
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleMgmt);
+            toggleMgmt();
+        });
+    </script>
+}

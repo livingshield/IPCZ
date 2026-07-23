@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Triáž AI Gramotnosti | aivezdravotnictvi.cz</title>
+    <meta name="description" content="Prototyp Vstupní Triáže AI Gramotnosti pro portál aivezdravotnictvi.cz (MZd + IPVZ)" />
+
+    <!-- Bootstrap 5 CSS CDN pro Grid a Utility -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Custom Design System -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-custom">
+            <div class="container d-flex justify-content-between align-items-center">
+                <a class="brand-title" asp-controller="Triage" asp-action="Index">
+                    aivezdravotnictvi.cz <span style="font-size: 0.8rem; opacity: 0.7; font-weight: 400; color: #fff;">| Triáž AI</span>
+                </a>
+                <div class="d-flex align-items-center">
+                    <a class="nav-link-custom" asp-controller="Triage" asp-action="Index">Test AI Gramotnosti</a>
+                    <a class="nav-link-custom" asp-controller="Triage" asp-action="Stats">Statistiky a Srovnání</a>
+                    
+                    <!-- Theme Switcher -->
+                    <div class="dropdown ms-3">
+                        <button class="btn btn-sm btn-outline-info dropdown-toggle rounded-pill" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.85rem;">
+                            🎨 Téma: <span id="currentThemeName">Tmavé</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" aria-labelledby="themeDropdown">
+                            <li><a class="dropdown-item" href="#" onclick="setTheme('theme-dark', 'Tmavé'); return false;">🌙 Tmavá (Dark)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="setTheme('theme-light', 'Světlá'); return false;">☀️ Světlá (Light)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="setTheme('theme-red', 'Červená'); return false;">❤️ Červená (Red)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="setTheme('theme-blue', 'Modrá'); return false;">💙 Modrá (Blue)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="setTheme('theme-green', 'Zelená'); return false;">💚 Zelená (Green)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="setTheme('theme-yellow', 'Žlutá'); return false;">💛 Žlutá (Yellow)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="setTheme('theme-rainbow', 'Duhová'); return false;">🌈 Duhová (Rainbow)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-5">
+        @RenderBody()
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="mb-1">Prototyp vstupní triáže portálu <strong>www.aivezdravotnictvi.cz</strong></p>
+            <p class="mb-0 text-muted" style="font-size: 0.85rem;">
+                Vyvíjeno pro Institut postgraduálního vzdělávání ve zdravotnictví (IPVZ) a Ministerstvo zdravotnictví ČR.
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function setTheme(themeClass, themeName) {
+            document.body.className = themeClass;
+            document.getElementById('currentThemeName').innerText = themeName;
+            localStorage.setItem('ipcz_theme_class', themeClass);
+            localStorage.setItem('ipcz_theme_name', themeName);
+        }
+
+        (function () {
+            const savedClass = localStorage.getItem('ipcz_theme_class') || 'theme-dark';
+            const savedName = localStorage.getItem('ipcz_theme_name') || 'Tmavé';
+            document.body.className = savedClass;
+            const el = document.getElementById('currentThemeName');
+            if (el) el.innerText = savedName;
+        })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

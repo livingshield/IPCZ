@@ -1,0 +1,136 @@
+@model IpczApp.Models.StatsViewModel
+
+@{
+    ViewData["Title"] = "Statistiky AI gramotnosti";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="glass-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="h3 fw-bold mb-0" style="color: var(--accent-cyan);">
+                    📊 Statistiky a Srovnání AI Gramotnosti
+                </h1>
+                <form asp-action="SeedData" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-info btn-sm rounded-pill">
+                        + Vygenerovat 50 testovacích dat
+                    </button>
+                </form>
+            </div>
+            <p class="text-muted">
+                Anonymizovaný přehled počítaný přímo nad daty v databázi MS SQL (uložená procedura <code>Ipcz_GetTriageStatistics</code>).
+            </p>
+
+            @if (TempData["StatsMessage"] != null)
+            {
+                <div class="alert alert-info my-3">
+                    @TempData["StatsMessage"]
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.SystemMessage))
+            {
+                <div class="alert alert-warning my-3">
+                    @Model.SystemMessage
+                </div>
+            }
+
+            <!-- Klíčové ukazatele -->
+            <div class="row g-4 my-3 text-center">
+                <div class="col-md-6">
+                    <div class="p-4 rounded" style="background: rgba(10, 15, 29, 0.6); border: 1px solid var(--border-color);">
+                        <div class="text-muted text-uppercase fw-semibold small mb-1">Celkem dokončených triáží</div>
+                        <div class="display-4 fw-bold text-light">@Model.TotalCount</div>
+                        <small class="text-muted">anonymních záznamů v databázi</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-4 rounded" style="background: rgba(10, 15, 29, 0.6); border: 1px solid var(--border-color);">
+                        <div class="text-muted text-uppercase fw-semibold small mb-1">Průměrné SP Skóre</div>
+                        <div class="display-4 fw-bold text-info">@Model.AverageOverallScore.ToString("F1") %</div>
+                        <small class="text-muted">napříč všemi zdravotnickými rolemi</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Srovnání dle rolí -->
+            <h3 class="h5 fw-bold mt-5 mb-3" style="color: var(--accent-cyan);">
+                Průměrné skóre a počty podle rolí
+            </h3>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle rounded" style="border: 1px solid var(--border-color);">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color);">
+                            <th>Role</th>
+                            <th class="text-center">Počet uživatelů</th>
+                            <th class="text-center">Průměrné skóre</th>
+                            <th>Vizuální indikátor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var roleStat in Model.RoleStats)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@roleStat.Role</td>
+                                <td class="text-center">@roleStat.Count</td>
+                                <td class="text-center fw-bold text-info">@roleStat.AvgScore.ToString("F1") %</td>
+                                <td>
+                                    <div class="progress-bar-container mb-0" style="height: 8px; width: 100%;">
+                                        <div class="progress-bar-fill" style="width: @(roleStat.AvgScore)%;"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Distribuce úrovní -->
+            <h3 class="h5 fw-bold mt-5 mb-3" style="color: var(--accent-teal);">
+                Distribuce uživatelů do Vzdělávacích Úrovní
+            </h3>
+            <div class="row g-3">
+                @foreach (var levelStat in Model.LevelStats)
+                {
+                    string colorClass = levelStat.Level.Contains("1") ? "var(--accent-teal)" : (levelStat.Level.Contains("2") ? "var(--accent-cyan)" : "var(--accent-purple)");
+                    double pctOfTotal = Model.TotalCount > 0 ? (double)levelStat.Count / Model.TotalCount * 100 : 0;
+
+                    <div class="col-md-4">
+                        <div class="p-3 rounded text-center" style="background: rgba(10, 15, 29, 0.5); border: 1px solid @colorClass;">
+                            <div class="fw-bold mb-1" style="color: @colorClass;">@levelStat.Level</div>
+                            <div class="h3 fw-bold text-light mb-1">@levelStat.Count <small class="fs-6 text-muted">osob</small></div>
+                            <small class="text-muted">@pctOfTotal.ToString("F0") % ze všech účastníků</small>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Průměrné skóre jednotlivých 6 návyků Aibility -->
+            <h3 class="h5 fw-bold mt-5 mb-3" style="color: var(--accent-purple);">
+                Průměrná úroveň jednotlivých 6 návyků Aibility
+            </h3>
+            <div class="row g-3">
+                @foreach (var habitKv in Model.HabitAverages)
+                {
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background: rgba(10, 15, 29, 0.5); border: 1px solid var(--border-color);">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold">@habitKv.Key</span>
+                                <span class="fw-bold text-info">@habitKv.Value.ToString("F1") %</span>
+                            </div>
+                            <div class="progress-bar-container mb-0" style="height: 6px;">
+                                <div class="progress-bar-fill" style="width: @(habitKv.Value)%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-action="Index" class="btn-primary-custom">
+                &larr; Spustit nový test
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,136 @@
+@model IpczApp.Models.TestViewModel
+
+@{
+    ViewData["Title"] = "Benchmark test AI gramotnosti";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="badge badge-level-2 me-2">Role: @Model.Role</span>
+                @if (Model.IsManagement)
+                {
+                    <span class="badge badge-level-3">Management</span>
+                }
+            </div>
+            <div class="text-muted fw-bold" id="progressText">0 / 12 zodpovězeno</div>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+        </div>
+
+        <div class="glass-card">
+            <h2 class="h4 fw-bold mb-4" style="color: var(--accent-cyan);">
+                Benchmark test AI gramotnosti (12 otázek)
+            </h2>
+
+            <form asp-action="Test" method="post" id="testForm">
+                <input type="hidden" asp-for="Role" />
+                <input type="hidden" asp-for="IsManagement" />
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger mb-4">
+                        @Html.ValidationSummary(false)
+                    </div>
+                }
+
+                @for (int i = 0; i < Model.Questions.Count; i++)
+                {
+                    var q = Model.Questions[i];
+                    <div class="question-card p-3 mb-4 rounded" style="background: rgba(10, 15, 29, 0.5); border: 1px solid var(--border-color);" data-qindex="@q.Id">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge border border-info text-info" style="background: rgba(0, 210, 255, 0.1); font-size: 0.8rem; letter-spacing: 0.05em;">
+                                Návyk @q.HabitId: @q.HabitName
+                            </span>
+                            <span class="text-light small">Otázka @(i + 1) / 12</span>
+                        </div>
+                        <p class="fw-semibold text-light mb-3" style="font-size: 1.05rem;">
+                            @q.QuestionText
+                        </p>
+
+                        <!-- Hodnocení 1-5 s tlačítkovou škálou -->
+                        <div class="scale-group">
+                            @for (int val = 1; val <= 5; val++)
+                            {
+                                string label = val switch
+                                {
+                                    1 => "1 - Nikdy",
+                                    2 => "2 - Málokdy",
+                                    3 => "3 - Občas",
+                                    4 => "4 - Často",
+                                    5 => "5 - Vždy",
+                                    _ => val.ToString()
+                                };
+                                int selectedVal = Model.Answers.ContainsKey(q.Id) ? Model.Answers[q.Id] : 0;
+                                string selectedClass = (selectedVal == val) ? "selected" : "";
+
+                                <div class="scale-btn @selectedClass" data-qid="@q.Id" data-val="@val">
+                                    @label
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Skrytý formulářový input pro POST -->
+                        <input type="hidden" name="Answers[@q.Id]" id="input_@q.Id" value="@(Model.Answers.ContainsKey(q.Id) ? Model.Answers[q.Id] : "")" />
+                    </div>
+                }
+
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn-primary-custom" id="submitBtn">
+                        Vyhodnotit výsledky &amp; Generovat studijní plán &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const scaleBtns = document.querySelectorAll('.scale-btn');
+            const totalQuestions = 12;
+
+            function updateProgress() {
+                let answeredCount = 0;
+                for (let i = 1; i <= totalQuestions; i++) {
+                    const inp = document.getElementById('input_' + i);
+                    if (inp && inp.value !== '') {
+                        answeredCount++;
+                    }
+                }
+
+                const pct = Math.round((answeredCount / totalQuestions) * 100);
+                document.getElementById('progressBar').style.width = pct + '%';
+                document.getElementById('progressText').innerText = answeredCount + ' / ' + totalQuestions + ' zodpovězeno';
+            }
+
+            scaleBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const qid = this.getAttribute('data-qid');
+                    const val = this.getAttribute('data-val');
+
+                    // Deselect siblings
+                    const parentGroup = this.parentElement;
+                    parentGroup.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+
+                    // Select clicked
+                    this.classList.add('selected');
+
+                    // Set hidden input
+                    const inp = document.getElementById('input_' + qid);
+                    if (inp) {
+                        inp.value = val;
+                    }
+
+                    updateProgress();
+                });
+            });
+
+            updateProgress();
+        });
+    </script>
+}

@@ -1,0 +1,402 @@
+@model IpczApp.Models.ResultViewModel
+
+@{
+    ViewData["Title"] = "Výsledky triáže a Studijní plán";
+    string badgeClass = Model.Level.Contains("1") ? "badge-level-1" : (Model.Level.Contains("2") ? "badge-level-2" : "badge-level-3");
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Hlavní karta s celkovým výsledkem -->
+        <div class="glass-card mb-4 text-center position-relative overflow-hidden">
+            <div class="mb-2">
+                <span class="badge badge-level me-2">Role: @Model.Role</span>
+                <span class="badge @badgeClass">@Model.Level</span>
+            </div>
+
+            <h1 class="display-5 fw-bold mb-2">Váš Výsledek AI Gramotnosti</h1>
+            <p class="text-muted mb-4">Metodika Aibility — Superpowered Professional™ (SP Score)</p>
+
+            <div class="d-inline-flex flex-column align-items-center justify-content-center my-3 p-4 rounded-circle" 
+                 style="width: 170px; height: 170px; background: var(--bg-primary); border: 4px solid var(--accent-cyan); box-shadow: var(--shadow-glow);">
+                <span class="display-4 fw-bold" style="color: var(--accent-cyan);">@Model.OverallScore.ToString("F0")</span>
+                <span class="text-muted small">ze 100 bodů</span>
+            </div>
+
+            <p class="lead mt-3 max-w-600 mx-auto" style="font-size: 1.15rem;">
+                @Model.LevelDescription
+            </p>
+        </div>
+
+        <!-- Nabídka Manažerské Masterclass -->
+        @if (Model.ShowMasterclass)
+        {
+            <div class="masterclass-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="font-size: 2.5rem;">👑</div>
+                    <div>
+                        <h3 class="h5 fw-bold text-warning mb-1">Doporučení: Masterclass pro Management nemocnic</h3>
+                        <p class="mb-0 text-light" style="font-size: 0.95rem;">
+                            Jako člen managementu máte možnost bez ohledu na celkové skóre navštívit exkluzivní program <strong>Masterclass (Management)</strong> zaměřený na strategické nasazení AI, legislativu AI Act a transformaci nemocničních procesů.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Rozpad skóre dle 6 návyků Aibility -->
+        <div class="glass-card mb-4">
+            <h3 class="h4 fw-bold mb-4" style="color: var(--accent-cyan);">
+                Detailní rozpad podle 6 návyků Aibility
+            </h3>
+
+            <div class="row g-4">
+                @foreach (var habit in Model.HabitScores)
+                {
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background: rgba(10, 15, 29, 0.5); border: 1px solid var(--border-color);">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-light">@habit.HabitId. @habit.HabitName</span>
+                                <span class="fw-bold text-info">@habit.PercentageScore.ToString("F0") %</span>
+                            </div>
+                            <div class="progress-bar-container mb-2" style="height: 8px;">
+                                <div class="progress-bar-fill" style="width: @(habit.PercentageScore)%;"></div>
+                            </div>
+                            <small class="text-muted">@habit.Description</small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Dynamické AI vyhodnocení nejslabších oblastí (Gemini API) -->
+        <div class="glass-card mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span style="font-size: 1.5rem;">🤖</span>
+                <h3 class="h4 fw-bold mb-0" style="color: var(--accent-cyan);">
+                    Personalizovaná AI analýza nejslabších oblastí
+                </h3>
+            </div>
+
+            <div class="ai-box">
+                <div class="fw-bold mb-2 text-info">Identifikovaný prostor pro růst: @string.Join(", ", Model.WeakestHabits.Select(w => w.HabitName))</div>
+                <p class="mb-0 text-light" style="line-height: 1.6;">
+                    @Html.Raw(Model.AiAnalysis.Replace("\n", "<br />"))
+                </p>
+            </div>
+        </div>
+
+        <!-- Doporučený studijní plán -->
+        <div class="glass-card mb-4">
+            <h3 class="h4 fw-bold mb-3" style="color: var(--accent-teal);">
+                📚 Váš Doporučený Studijní Plán
+            </h3>
+            <p class="text-muted mb-4">Na základě vaší úrovně <strong>@Model.Level</strong> a role <strong>@Model.Role</strong> doporučujeme následující kroky:</p>
+
+            <div class="list-group">
+                @for (int idx = 0; idx < Model.RecommendedSteps.Count; idx++)
+                {
+                    <div class="list-group-item p-3 mb-2 rounded border-0 d-flex align-items-start gap-3" 
+                         style="background: rgba(0, 229, 163, 0.08); border-left: 4px solid var(--accent-teal) !important;">
+                        <span class="badge rounded-circle bg-success text-white fw-bold p-2" style="width: 32px; height: 32px;">@(idx + 1)</span>
+                        <div class="text-light fw-medium" style="font-size: 1.05rem;">
+                            @Model.RecommendedSteps[idx]
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- E-mail formulář a PDF export -->
+        <div class="glass-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <h3 class="h5 fw-bold mb-0">✉️ Zaslat studijní plán e-mailem / 📄 Export do PDF</h3>
+                <button type="button" class="btn btn-info rounded-pill px-4 shadow fw-bold" data-bs-toggle="modal" data-bs-target="#pdfModal">
+                    🎨 Grafické PDF s výběrem témat &rarr;
+                </button>
+            </div>
+            <p class="text-muted small mb-3">Vyberte si barvu grafického pozadí a stáhněte si profesionálně naformátovaný PDF dokument s plnou diakritikou, nebo si ho nechte poslat na e-mail.</p>
+
+            @if (!string.IsNullOrEmpty(Model.EmailStatusMessage))
+            {
+                <div class="alert @(Model.EmailSentSuccess ? "alert-success" : "alert-danger") mb-3">
+                    @Model.EmailStatusMessage
+                </div>
+            }
+
+            <form asp-action="SendEmail" method="post" class="row g-2 align-items-center">
+                <div class="col-md-8">
+                    <input type="email" name="emailAddress" class="form-control-custom" placeholder="vás.email@nemocnice.cz" required value="@Model.EmailAddress" />
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn-primary-custom w-100 justify-content-center">
+                        Odeslat e-mail
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tlačítka akcí -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+            <a asp-action="Index" class="btn btn-outline-light rounded-pill px-4">
+                &larr; Spustit nový test
+            </a>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-info rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#pdfModal">
+                    📄 Exportovat do PDF (Grafické Téma)
+                </button>
+                <a asp-action="Stats" class="btn-primary-custom">
+                    Zobrazit anonymizované statistiky &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pro Grafický export do PDF s výběrem témata -->
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content text-light" style="background: #0d1527; border: 1px solid var(--accent-cyan);">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold text-info" id="pdfModalLabel">📄 Grafický Export Výsledků do PDF</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Levý panel: Výběr barevného téma pozadí a akce -->
+                    <div class="col-lg-4 mb-4 mb-lg-0 border-end border-secondary pe-lg-4">
+                        <h6 class="fw-bold mb-3 text-warning">1. Vyberte barevné téma pozadí PDF:</h6>
+                        <div class="d-grid gap-2 mb-4">
+                            <button class="btn btn-outline-info text-start pdf-theme-btn active" onclick="setPdfTheme('bg_dark.jpg', '#090e1a', '#00d2ff', 'Tmavé (Dark)', false)">🌙 Tmavá (Dark)</button>
+                            <button class="btn btn-outline-light text-start pdf-theme-btn" onclick="setPdfTheme('bg_light.jpg', '#f8fafc', '#0284c7', 'Světlé (Light)', true)">☀️ Světlá (Light)</button>
+                            <button class="btn btn-outline-danger text-start pdf-theme-btn" onclick="setPdfTheme('bg_red.jpg', '#1a080c', '#ff4d4d', 'Červené (Red)', false)">❤️ Červená (Red)</button>
+                            <button class="btn btn-outline-primary text-start pdf-theme-btn" onclick="setPdfTheme('bg_blue.jpg', '#061126', '#38bdf8', 'Modré (Blue)', false)">💙 Modrá (Blue)</button>
+                            <button class="btn btn-outline-success text-start pdf-theme-btn" onclick="setPdfTheme('bg_green.jpg', '#061a12', '#34d399', 'Zelené (Green)', false)">💚 Zelená (Green)</button>
+                            <button class="btn btn-outline-warning text-start pdf-theme-btn" onclick="setPdfTheme('bg_yellow.jpg', '#1a1506', '#fbbf24', 'Žluté (Yellow)', false)">💛 Žlutá (Yellow)</button>
+                            <button class="btn btn-outline-magenta text-start pdf-theme-btn" style="border-color: #ec4899; color: #ec4899;" onclick="setPdfTheme('bg_rainbow.jpg', '#12091c', '#ec4899', 'Duhové (Rainbow)', false)">🌈 Duhová (Rainbow)</button>
+                        </div>
+
+                        <h6 class="fw-bold mb-2 text-warning">2. Generovat a stáhnout:</h6>
+                        <button class="btn btn-success btn-lg w-100 mb-3 shadow fw-bold" onclick="downloadGraphicPdf()">
+                            📥 Stáhnout PDF v tomto tématu
+                        </button>
+                        <p class="text-muted small text-center">Exportuje oficiální A4 dokument s plnou českou diakritikou a vysokým kontrastem.</p>
+                    </div>
+
+                    <!-- Pravý panel: Živý A4 Náhled PDF -->
+                    <div class="col-lg-8">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-muted small">Živý náhled formátu A4:</span>
+                            <span class="badge bg-secondary" id="activeThemeBadge">Téma: Tmavé (Dark)</span>
+                        </div>
+                        <div class="pdf-preview-wrapper p-2 bg-dark rounded overflow-auto shadow-inner" style="max-height: 580px;">
+                            
+                            <!-- PDF Template Container (přesná A4 šířka pro render) -->
+                            <div id="pdfRenderContainer" class="p-4 position-relative text-light" 
+                                 style="width: 764px; min-height: 1080px; background-color: #090e1a; background-image: url('/ipcz/assets/bg_dark.jpg'); background-size: cover; background-position: center; font-family: 'Inter', sans-serif; box-sizing: border-box;">
+                                
+                                <!-- Hlavička s logem IPVZ a portálu -->
+                                <div class="d-flex justify-content-between align-items-center pb-3 mb-4 pdf-header-border" style="border-bottom: 2px solid rgba(0, 210, 255, 0.4);">
+                                    <div>
+                                        <div class="pdf-main-title" style="font-size: 1.4rem; font-weight: 800; color: #00d2ff; letter-spacing: -0.02em;">aivezdravotnictvi.cz</div>
+                                        <div class="pdf-sub-title" style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">Institut postgraduálního vzdělávání ve zdravotnictví (IPVZ)</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="pdf-badge" style="background: rgba(0,210,255,0.15); border: 1px solid #00d2ff; color: #00d2ff; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">
+                                            Vstupní Triáž AI Gramotnosti
+                                        </span>
+                                        <div class="pdf-date" style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-weight: 500;">Datum: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</div>
+                                    </div>
+                                </div>
+
+                                <!-- Hlavní skóre a úroveň -->
+                                <div class="p-3 mb-4 rounded pdf-card" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(10px);">
+                                    <div class="row align-items-center">
+                                        <div class="col-8">
+                                            <div class="pdf-text-muted" style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Role ve zdravotnictví</div>
+                                            <div class="pdf-text-dark" style="font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">@Model.Role</div>
+                                            <div class="pdf-text-muted" style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Doporučená Úroveň</div>
+                                            <div class="pdf-accent-text" style="font-size: 1.1rem; font-weight: 800; color: #38bdf8;">@Model.Level</div>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <div class="pdf-gauge" style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%; background: #090e1a; border: 3px solid #00d2ff; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,210,255,0.3);">
+                                                <span class="pdf-score-val" style="font-size: 1.8rem; font-weight: 800; color: #00d2ff; line-height: 1;">@Model.OverallScore.ToString("F0")</span>
+                                                <span class="pdf-text-muted" style="font-size: 0.65rem; color: #94a3b8;">ze 100 SP %</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Rozpad 6 návyků Aibility -->
+                                <div class="p-3 mb-4 rounded pdf-card" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.15);">
+                                    <div class="pdf-card-title" style="font-size: 1.05rem; font-weight: 700; color: #00d2ff; margin-bottom: 12px;">📊 Rozpad podle 6 návyků metodiky Aibility</div>
+                                    <div class="row g-2">
+                                        @foreach (var habit in Model.HabitScores)
+                                        {
+                                            <div class="col-6">
+                                                <div class="p-2 rounded pdf-habit-box" style="background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255,255,255,0.08);">
+                                                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                                                        <span class="pdf-habit-title" style="font-weight: 600; font-size: 0.82rem; color: #e2e8f0;">@habit.HabitId. @habit.HabitName</span>
+                                                        <span class="pdf-habit-pct" style="font-weight: 700; font-size: 0.82rem; color: #38bdf8;">@habit.PercentageScore.ToString("F0") %</span>
+                                                    </div>
+                                                    <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                                                        <div style="width: @(habit.PercentageScore)%; height: 100%; background: linear-gradient(90deg, #00d2ff, #3b82f6); border-radius: 3px;"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- AI Analýza nejslabších oblastí (Gemini API) -->
+                                <div class="p-3 mb-4 rounded pdf-card pdf-ai-box" style="background: rgba(15, 23, 42, 0.85); border-left: 4px solid #00d2ff; border-top: 1px solid rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <div class="pdf-card-title" style="font-size: 1.05rem; font-weight: 700; color: #00d2ff; margin-bottom: 6px;">🤖 Personalizovaná AI Analýza prostorů pro růst</div>
+                                    <div class="pdf-ai-text" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+                                        @Html.Raw(Model.AiAnalysis.Replace("\n", "<br />"))
+                                    </div>
+                                </div>
+
+                                <!-- Doporučený Studijní Plán -->
+                                <div class="p-3 mb-4 rounded pdf-card" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.15);">
+                                    <div class="pdf-card-title-teal" style="font-size: 1.05rem; font-weight: 700; color: #34d399; margin-bottom: 10px;">📚 Doporučený Studijní Plán Vzdělávání</div>
+                                    @for (int idx = 0; idx < Model.RecommendedSteps.Count; idx++)
+                                    {
+                                        <div class="d-flex align-items-start gap-2 mb-2 p-2 rounded pdf-step-box" style="background: rgba(6, 78, 59, 0.3); border: 1px solid rgba(52, 211, 153, 0.3);">
+                                            <span style="background: #059669; color: #ffffff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;">@(idx + 1)</span>
+                                            <span class="pdf-step-text" style="font-size: 0.85rem; color: #f1f5f9; font-weight: 500;">@Model.RecommendedSteps[idx]</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Zápatí s razítkem -->
+                                <div class="pt-3 mt-auto text-center pdf-footer-text" style="border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.75rem; color: #94a3b8;">
+                                    Oficiální výstup protokolu Vstupní Triáže AI Gramotnosti • <strong>aivezdravotnictvi.cz</strong> • IPVZ & MZd ČR
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling pro Světlé téma v PDF exportu (Vysoký kontrast) */
+    #pdfRenderContainer.pdf-light-theme {
+        color: #0f172a !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-main-title {
+        color: #0284c7 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-sub-title {
+        color: #1e293b !important;
+        font-weight: 700 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-date {
+        color: #334155 !important;
+        font-weight: 600 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-header-border {
+        border-bottom-color: rgba(2, 132, 199, 0.4) !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-card {
+        background: rgba(255, 255, 255, 0.94) !important;
+        border: 1px solid rgba(2, 132, 199, 0.25) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06) !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-text-dark {
+        color: #0f172a !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-text-muted {
+        color: #334155 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-accent-text,
+    #pdfRenderContainer.pdf-light-theme .pdf-card-title {
+        color: #0284c7 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-gauge {
+        background: #ffffff !important;
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 15px rgba(2, 132, 199, 0.25) !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-score-val {
+        color: #0284c7 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-habit-box {
+        background: rgba(241, 245, 249, 0.95) !important;
+        border: 1px solid rgba(203, 213, 225, 0.9) !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-habit-title {
+        color: #0f172a !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-habit-pct {
+        color: #0284c7 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-ai-box {
+        border-left: 4px solid #0284c7 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-ai-text {
+        color: #0f172a !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-card-title-teal {
+        color: #059669 !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-step-box {
+        background: rgba(236, 253, 245, 0.95) !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-step-text {
+        color: #064e3b !important;
+    }
+    #pdfRenderContainer.pdf-light-theme .pdf-footer-text {
+        border-top-color: rgba(0, 0, 0, 0.15) !important;
+        color: #475569 !important;
+    }
+</style>
+
+@section Scripts {
+    <!-- html2pdf.js knihovna pro 100% grafický PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        let currentBgImage = '/ipcz/assets/bg_dark.jpg';
+
+        function setPdfTheme(bgFileName, bgColor, accentColor, themeTitle, isLight) {
+            currentBgImage = '/ipcz/assets/' + bgFileName;
+            const container = document.getElementById('pdfRenderContainer');
+            container.style.backgroundImage = "url('" + currentBgImage + "')";
+            container.style.backgroundColor = bgColor;
+            
+            document.getElementById('activeThemeBadge').innerText = 'Téma: ' + themeTitle;
+
+            if (isLight) {
+                container.classList.add('pdf-light-theme');
+            } else {
+                container.classList.remove('pdf-light-theme');
+            }
+
+            // Označení aktivního tlačítka
+            const btns = document.querySelectorAll('.pdf-theme-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        }
+
+        function downloadGraphicPdf() {
+            const element = document.getElementById('pdfRenderContainer');
+            
+            // Konfigurace html2pdf s vysokým rozlišením (scale 2) pro A4
+            const opt = {
+                margin:       [0, 0, 0, 0],
+                filename:     'Vysledky_Triaze_AI_Gramotnosti_@Model.OverallScore.ToString("F0")pct.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+                jsPDF:        { unit: 'px', format: [764, 1080], orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+}
